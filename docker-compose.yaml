@@ -1,0 +1,57 @@
+services:
+ app:
+  build:
+   context: .
+   dockerfile: DockerFile
+  image: nhana213/boiler_go:0.0.1
+  environment:
+   GIN_NODE: 'release' # Use your desired environment variable
+   PORT: 8000
+  ports:
+   - '${PORT:-8000}:${PORT:-8000}' # Bind the port to the host
+  depends_on:
+   - mongo
+  volumes:
+   - .:/usr/apps/boilerGo # Mount the current directory to the container
+
+ mongo: # MongoDB service, defined separately
+  image: mongo:latest
+  container_name: app_mongo
+  restart: always
+  environment:
+   MONGO_INITDB_ROOT_USERNAME: root
+   MONGO_INITDB_ROOT_PASSWORD: example
+  ports:
+   - '27017:27017' # Exposes MongoDB on port 27017
+  volumes:
+   - mongo_data:/data/db # Persist MongoDB data
+  #  - ./config.yml:/app/config.yml
+  healthcheck:
+   test: ['CMD', 'mongo', '--eval', 'db.runCommand("ping").ok']
+   interval: 10s
+   timeout: 5s
+   retries: 5
+
+ rabbitmq:
+  image: rabbitmq:3-management
+  container_name: app-rabbitmq
+  restart: always
+  ports:
+   - '5672:5672'
+   - '15672:15672'
+ redis:
+  image: redis:latest
+  container_name: app_redis
+  restart: always
+  ports:
+   - '6379:6379'
+  volumes:
+   - redis_data:/var/lib/redis/data
+volumes:
+ db:
+  driver: local
+ redis_data:
+  driver: local
+ rabbit_data:
+  driver: local
+ mongo_data:

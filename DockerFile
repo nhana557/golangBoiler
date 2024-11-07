@@ -1,0 +1,33 @@
+# Use the official Go image as a base
+FROM golang:1.21.4 AS builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy go.mod and go.sum to download dependencies
+COPY go.mod go.sum ./
+
+# Download dependencies (cache dependencies)
+RUN go mod download
+
+# Copy the source code into the container
+COPY . .
+
+# Build the Go app with static linking
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./main.go
+
+# Start a new stage with a minimal image
+FROM alpine:latest  
+
+# Set the working directory in the final image
+WORKDIR /root/
+
+# Copy the binary from the builder stage
+COPY --from=builder /app/config.yaml .
+COPY --from=builder /app/main .
+
+# Expose the port (set it in your environment or use a default)
+EXPOSE ${PORT:-8000}
+
+# Command to run the executable
+CMD ["./main"]

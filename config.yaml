@@ -1,0 +1,19 @@
+GIN_NODE: 'debug'
+
+app:
+ name: Golang_boiler
+
+server:
+ address: 9090
+
+context:
+ timeout: 30
+
+mongo:
+ url: mongodb://root:example@app_mongo:27017/boilergo?authSource=admin&readPreference=primary&directConnection=true&ssl=false
+ dbName: boilergo
+
+redis:
+ url: app_redis
+ port: 6379
+ password:
